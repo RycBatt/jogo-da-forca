@@ -1,9 +1,9 @@
 class WordFactory{
 
-    Build(simpleAppointment){
+    Build(simpleWord){
 
         var word = {
-            id: simpleAppointment._id,
+            id: simpleWord._id,
             palavra: simpleWord.palavra, 
         }
         

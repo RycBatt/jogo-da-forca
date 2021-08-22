@@ -8,10 +8,23 @@ class WordService {
     
     async Create(palavra){
         var newWord = new Word({
-                palavra
+            palavra
         });
         try{
             await newWord.save();
+            return true;
+        }catch(err){
+            console.log(err);
+            return false;
+        }
+    }
+
+    async Delete(palavra){
+        
+        console.log(palavra[1]);
+
+        try{
+            await Word.findByIdAndDelete(palavra[1]);
             return true;
         }catch(err){
             console.log(err);

@@ -23,11 +23,24 @@ app.get("/cadastro", async (req, res) => {
     
     var wordS = await WordService.GetAll(true);
     res.render("create",{wordS});
-})
+});
 
 app.post("/create", async (req, res) => {
 
     var status = await wordService.Create(
+        req.body.palavra
+    )
+
+    if(status){
+        res.redirect("/cadastro");
+    }else{
+        res.send("Ocorreu uma falha!");
+    }
+});
+
+app.post("/delete", async (req, res) => {
+
+    var status = await wordService.Delete(
         req.body.palavra
     )
 

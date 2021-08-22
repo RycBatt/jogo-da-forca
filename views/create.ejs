@@ -18,8 +18,13 @@
     <hr>
 
     <% wordS.forEach(word => { %>
-        <h4><%= word.palavra %> </41>
-        <button class="btn btn-danger">Deletar</button>
+        <hr>
+        <form method="POST" action="delete">
+            <input type="text" name="palavra" id="palavra" hidden value=<%= word.palavra %>>
+            <input type="text" name="palavra" id="palavra" hidden value=<%= word.id %>>
+            <h4><%= word.palavra %> </h4>
+            <button class="btn btn-danger">Deletar</button>
+        </form>
         <hr>
     <% }) %>
 
