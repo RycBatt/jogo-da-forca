@@ -1,19 +1,14 @@
 {
-  "name": "trabalho1",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "consolidate": "^0.16.0",
+  "devDependencies": {
     "ejs": "^3.1.6",
     "express": "^4.17.1",
-    "mongoose": "^5.13.7",
-    "path": "^0.12.7",
-    "swig": "^1.4.2"
+    "express-session": "^1.17.2",
+    "express-ws": "^5.0.2",
+    "mongoose": "^6.0.2",
+    "nodemon": "^2.0.12",
+    "path": "^0.12.7"
+  },
+  "scripts": {
+    "dev": "nodemon app.js --ext '*'"
   }
 }

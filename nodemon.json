@@ -1,0 +1,11 @@
+{
+  "name": "app.js",
+  "verbose": true,
+  "ignore": [
+    ".vscode",
+    "node_modules"
+  ],
+  "watch": [
+    "**/*"
+  ]
+}

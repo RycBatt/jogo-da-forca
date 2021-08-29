@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro</title>
+    <link rel="stylesheet" href="/dist/css/bootstrap.min.css">
+    <link rel="shortcut icon" href="#">
+</head>
+<body>
+    <h1>Cadastro de palavra</h1>
+    <hr>
+      <form method="POST" action="create">
+          <input type="text" name="palavra" id="palavra" placeholder="Digite uma palavra para o jogo da forca" class="form-control">
+          <button class="btn btn-success btn-block">Cadastrar</button>
+      </form>
+    <hr>
+    <% wordS.forEach(word => { %>
+        <hr>
+        <form method="POST" action="delete">
+            <input type="text" name="palavra" id="palavra" hidden value=<%= word.palavra %>>
+            <input type="text" name="palavra" id="palavra" hidden value=<%= word.id %>>
+            <h4><%= word.palavra %> </h4>
+            <button class="btn btn-danger">Deletar</button>
+        </form>
+        <hr>
+    <% }) %>
+</body>
+<script src="/dist/js/bootstrap.bundle.min.js"></script>
+
+</html>
