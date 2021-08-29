@@ -1,0 +1,73 @@
+html, body{
+  height:100%;
+  background-color: #DCDCDC;
+}
+
+body{
+  display:flex;
+  align-items:center;
+}
+
+.formlogin{
+  background-color: #A9A9A9;
+  color: #FFF;
+  padding: 20px;
+  border: 5px solid #4F4F4F;
+  box-shadow: 2px 2px #363636;
+  border-radius: 20px;
+  max-width:480px;
+  margin:auto;
+}
+
+#CreateRoom{
+  margin-top: 10px;
+}
+
+#GamerList{
+  background-color: #A9A9A9;
+  color: #FFF;
+  padding: 20px;
+  border: 5px solid #4F4F4F;
+  box-shadow: 2px 2px #363636;
+  border-radius: 20px;
+}
+
+ul{
+  list-style-type: none;
+}
+
+li{
+  margin-top: 10px;
+}
+
+li.input{
+  border-radius: 20px;
+}
+
+.div_gamerList{
+  display: inline-block;
+}
+
+.input_list{
+  width: 80%;
+}
+
+.btn_list{
+  width: 10%;
+}
+
+.container{
+  align-items: center;
+}
+
+.botao_lista{
+  padding: 3.5px 4px 3.5px 4px;
+  width: 100%;
+}
+
+.imgMain{
+  display:block;
+  margin-left: auto;
+  margin-right: auto;
+  width:65%;
+}

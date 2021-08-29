@@ -89,7 +89,7 @@ function sendCustomListRoom(wsc){
 }
 
 /**
- * Lista de respostas possíveis para WS no servidor principal
+ * Lista de respostas possíveis para WS no servidor principal na página principal
  */
 let actionWsIncommingMain = {
   "create": (wsc, nick) => {
@@ -130,15 +130,17 @@ let actionWsIncommingMain = {
     })})){actionWsIncommingMain["closeRoom"](wsc, idAlready);} //Fecha a sala anterior
     roomsWaiting[indexId].players.push(wsc);
     roomsWaiting[indexId].nicks.push(nick);
+    roomFilled  = roomsWaiting[indexId].players.length == qtyPlayers;
     roomsWaiting[indexId].players.forEach((player)=>{
       player.send(JSON.stringify({
         info: "join", data: {
           id: id,
           nicks: roomsWaiting[indexId].nicks,
-          qty: roomsWaiting[indexId].players.length == qtyPlayers ? "full" : roomsWaiting[indexId].players.length
+          qty: roomFilled ? "full" : roomsWaiting[indexId].players.length
         }
       }));
     });
+    if (roomFilled) roomsPlaying.push(roomsWaiting.splice(indexId, 1)[0]);
     broadcastRoomList();
   },
   "closeRoom": (wsc, id) => {
@@ -171,7 +173,26 @@ expressWs.getWss().on('connection', function(wsc, req) {
     wssConnectionsMain.push(wsc);
     sendCustomListRoom(wsc);
     console.log(`Abriu conexão WS - Sala principal. Qtd total: ${wssConnectionsMain.length}`);
-  } else console.log(req.url);
+  } else {
+    let splitString = req.url.split("/");
+    if (splitString[3] == ".websocket" && splitString[1] == "game"){
+      let indexId;
+      if(!roomsPlaying.some((el, index)=>{
+        if (splitString[2] == el.id){
+          indexId = index;
+          return true;
+        }
+      })){
+        wsc.send(JSON.stringify({info: "open", error: 1})); //Não existe essa sala aberta
+        return wsc.terminate();
+      }
+      if(!roomsPlaying[indexId].players.some((el)=>{return wsc == el})){
+        wsc.send(JSON.stringify({info: "open", error: 2})); //Esse jogador não está cadastrado nessa sala
+        return wsc.terminate();
+      }
+      wsc.send(JSON.stringify({info: "open", data: roomsPlaying[indexId]}));
+    }
+  }
 });
 
 /**
@@ -179,6 +200,13 @@ expressWs.getWss().on('connection', function(wsc, req) {
  */
 app.get('/', function(req, res){
   res.render("index");
+});
+
+/**
+ * Tela inicial
+ */
+ app.get('/game/:id', function(req, res){
+  res.render("game");
 });
 
 /**

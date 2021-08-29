@@ -1,20 +1,47 @@
 const lobby = {
   refreshList: function(list){
-    let ul = document.createElement("ul");
-    ul.className = "list-group"
-
-    //COLOCAR AQUI APENAS AS SALAS POSSÍVEIS DE SEREM USADAS
-
-    list.forEach((element) => {
-      let il = document.createElement("il");
-      il.className = "list-group-item";
-      let label = document.createElement("label");
-      //label.textContent - Colocar nome do jogador aqui
-      il.appendChild(label);
-      let button = document.createElement("button");
-      //Diferenciar se é a sala do mesmo cara ou não, usar um if aqui
-      il.appendChild(button);
+    let gList = document.getElementById("GamerList").querySelector("ul");
+    gList.innerHTML = "";
+    list = list.filter((el)=>{
+      return el.nicks.length == 1;
     });
-    document.getElementById("lobby_list").appendChild(ul)
+    //Colocar o seu sempre em primeiro lugar
+    //Pesquisar sobre .sort
+    if (list.length > 0){
+      document.getElementById("GamerList").classList.remove("invisible");
+      list.forEach((currentValue) => {
+        tipoBtn = currentValue.ureOnIt ? "Fechar" : "Jogar";
+        estiloBtn = currentValue.ureOnIt ? "btn-danger" : "btn-dark";
+        fncBtn = currentValue.ureOnIt ? `lobby.closeRoom("${currentValue.id}")` : `lobby.join("${currentValue.id}")`;
+        let liNew = document.createElement("li");
+        liNew.innerHTML = (
+          `<div class="row">
+            <div class="col col-9">
+              <input type="text" class="form-control" value=${currentValue.nicks[0]} disabled="">
+            </div>
+            <div class="col col-3">
+              <button onclick=${fncBtn} class="btn ${estiloBtn} btn-lg botao_lista">${tipoBtn}</button>
+            </div>
+          </div>`
+        );
+        gList.appendChild(liNew);
+      });
+    } else {
+      document.getElementById("GamerList").classList.add("invisible");
+    }
+  },
+  create(){
+    //Se faltar apelido, borda vermelha
+    connection.create(document.getElementById('nick').value);
+    document.getElementById("nick").disabled = true;
+  },
+  closeRoom(id){
+    connection.closeRoom(id);
+  },
+  join(id){
+    //Se faltar apelido, borda vermelha
+    connection.join(document.getElementById('nick').value, id);
   }
 }
+
+//document.getElementById("CreateRoom").addEventListener("click", ()=>{VOLTAR A BORDA AO NORMAL});

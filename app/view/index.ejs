@@ -5,47 +5,24 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<title>Jogo da Forca</title>
 		<link rel="stylesheet" href="/dist/css/bootstrap.min.css">
-		<link rel="shortcut icon" href="#">
+		<link rel="stylesheet" href="/css/main.css">
 	</head>
 	<body>
 		<div class="container">
 			<div class="row">
-				<div class="col-3">
-					<div class="container">
-						<div class="row">
-							<input type="text" id="nick" size="20" /> 
-						</div>
-						<div class="row">
-							<button type="button" class="btn btn-primary">Criar sala</button>
-						</div>
+			  <div class="col col-6">
+					<div class="formlogin">
+						<img src="/img/logo.png" class="imgMain">
+						<input type="name" id="nick" class="form-control" placeholder="Apelido">
+						<button onclick="lobby.create()" class="btn btn-dark btn-lg w-100" id="CreateRoom">Criar Sala</button> <!--Verificar aqui-->
 					</div>
-				</div>
-				<div class="col-9" id="lobby_list">
-					
-					
-					
-					
-					<!--<ul class="list-group">
-						<li class="list-group-item">
-							<label>Nome qualquer 1</label>
-							<button type="button" class="btn btn-primary">Entrar</button>
-						</li>
-						<li class="list-group-item">
-							<label>Nome qualquer 2</label>
-							<button type="button" class="btn btn-primary">Entrar</button>
-						</li>
-						<li class="list-group-item">A third item</li>
-						<li class="list-group-item">A fourth item</li>
-						<li class="list-group-item">And a fifth one</li>
-					</ul>-->
-					
-
-
-
-				</div>
+			  </div>
+				<div class="col col-6 col-md4 invisible" id="GamerList">
+					<ul class="GamerList">
+					</ul>
+			  </div>
 			</div>
 		</div>
-
 	</body>
   <script src="/dist/js/bootstrap.bundle.min.js"></script>
 	<script src="/dist/js/reconnecting-websocket.min.js"></script>
