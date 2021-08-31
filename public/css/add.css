@@ -19,11 +19,11 @@ body{
   margin:auto;
 }
 
-#CreateRoom{
+#CreateWord{
   margin-top: 10px;
 }
 
-#GamerList{
+#WordList{
   background-color: #A9A9A9;
   color: #FFF;
   padding: 20px;
@@ -38,18 +38,6 @@ ul{
 
 li{
   margin-top: 10px;
-}
-
-li.input{
-  border-radius: 20px;
-}
-
-.div_gamerList{
-  display: inline-block;
-}
-
-.input_list{
-  width: 80%;
 }
 
 .btn_list{
