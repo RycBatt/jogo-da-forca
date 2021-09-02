@@ -5,9 +5,12 @@ const lobby = {
     list = list.filter((el)=>{
       return el.nicks.length == 1;
     });
-    //Colocar o seu sempre em primeiro lugar
-    //Pesquisar sobre .sort
     if (list.length > 0){
+      list.sort((a, b)=>{
+        if (!a.ureOnIt && b.ureOnIt) return 1;
+        else if (a.ureOnIt && !b.ureOnIt) return -1;
+        return 0
+      });
       document.getElementById("GamerList").classList.remove("invisible");
       list.forEach((currentValue) => {
         tipoBtn = currentValue.ureOnIt ? "Fechar" : "Jogar";
@@ -43,5 +46,7 @@ const lobby = {
     connection.join(document.getElementById('nick').value, id);
   }
 }
+
+
 
 //document.getElementById("CreateRoom").addEventListener("click", ()=>{VOLTAR A BORDA AO NORMAL});

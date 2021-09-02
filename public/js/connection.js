@@ -43,8 +43,8 @@ const connection = {
   join: (nick, id) => {
     connection.wsc.send(JSON.stringify({info: "join", nick: nick, id: id}));
   },
-  closeRoom: (nick, id) => {
-    connection.wsc.send(JSON.stringify({info: "closeRoom", nick: nick, id: id}));
+  closeRoom: (id) => {
+    connection.wsc.send(JSON.stringify({info: "closeRoom", id: id}));
   }
 }
 

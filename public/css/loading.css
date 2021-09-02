@@ -1,0 +1,31 @@
+body {
+  display:flex;
+  align-items: center;
+  justify-content: center;
+  min-height:100vh;
+}
+
+.msg{
+  font-size:40px;
+  font-family:cursive;
+   color: black;
+  -webkit-text-fill-color: white; /* Will override color (regardless of order) */
+  -webkit-text-stroke-width: 1px;
+  -webkit-text-stroke-color: black;
+}
+.c-loader {
+  animation:is-rotating 1s infinite;
+  border-radius:50%;
+  border:6px solid#e5e5e5;
+  border-top-color:black;
+  height: 50px;
+  width:50px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@keyframes is-rotating {
+  to {
+   transform: rotate(1turn);
+  }
+}

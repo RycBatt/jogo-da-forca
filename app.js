@@ -11,32 +11,33 @@ const mongoose = require("mongoose");
 const Word = require(path.join(__dirname, 'app', 'model', 'word'));
 
 /**
- * Variáveis para ambos servidores
- */
+* Variáveis para ambos servidores
+*/
 let portMain = 10000;
 let portAdmin = 4000;
 let dataBankAddress = "mongodb://localhost:27017/JogoDaForca";
 
 /**
- * Configurações para ambos servidores
- */
+* Configurações para ambos servidores
+*/
 mongoose.connect(dataBankAddress, {useNewUrlParser: true, useUnifiedTopology: true});
 
 /** --------------------------
- *  --- SERVIDOR PRINCIPAL ---
- *  --------------------------
- */
+*  --- SERVIDOR PRINCIPAL ---
+*  --------------------------
+*/
 
 /**
- * Requires para porta principal
- */
+* Requires para porta principal
+*/
 const app = express();
 const expressWs = require('express-ws')(app);
+const session = require('express-session');
 const randomString = require(path.join(__dirname, 'core', 'randomString'));
 
 /**
- * Variáveis para servidor principal
- */
+* Variáveis para servidor principal
+*/
 let roomLengthId = 5;
 let qtyPlayers = 2;
 let wssConnectionsMain = [];
@@ -45,35 +46,36 @@ let roomsWaiting = [];
 let roomsPlaying = [];
 
 /**
- * Configurações servidor principal
- */
+* Configurações servidor principal
+*/
 app.use(express.static("public"));
 app.use(express.urlencoded({extended: true})); 
 app.use(express.json());
 app.set('view engine','ejs');
 app.set('views', path.join(__dirname, 'app', 'view'));
+app.use(session({secret: '*Bs9g3#TdEk_@BPv', resave: true, saveUninitialized: true}));
 
 /**
- * Função para mandar uma mensagem para uma lista de clientes conectados
- */
+* Função para mandar uma mensagem para uma lista de clientes conectados
+*/
 function broadcast (msg, list){
   list.forEach((el)=>{
     try {el.send(msg);}
-		catch (e) {console.log(e);}
+    catch (e) {console.log(e);}
   });
 }
 
 /**
- * Função para mandar a lista de salas abertas para os clientes conectados no salão principal
- */
+* Função para mandar a lista de salas abertas para os clientes conectados no salão principal
+*/
 function broadcastRoomList (){
   wssConnectionsMain.forEach((wsc)=>{sendCustomListRoom(wsc);});
 }
 
 /**
- * Função para criar uma mensagem customizada para cada usuário conectado ao salão principal
- * Basicamente, além de mostrar todas as sala, também informa pro cliente qual sala ele está conectado
- */
+* Função para criar uma mensagem customizada para cada usuário conectado ao salão principal
+* Basicamente, além de mostrar todas as sala, também informa pro cliente qual sala ele está conectado
+*/
 function sendCustomListRoom(wsc){
   try {
     let msg = roomsWaiting.map((el)=>{
@@ -89,10 +91,12 @@ function sendCustomListRoom(wsc){
 }
 
 /**
- * Lista de respostas possíveis para WS no servidor principal na página principal
- */
+* Lista de respostas possíveis para WS no servidor principal na página principal
+*/
 let actionWsIncommingMain = {
-  "create": (wsc, nick) => {
+  "create": (args) => {
+    let wsc = args.wsc;
+    let nick = args.nick;
     if (!nick) return wsc.send(JSON.stringify({info: "create", error: 1})); //Tentou criar sem nome
     if (roomsWaiting.some((el)=>{return el.players.some((pl)=>{return (wsc == pl);})})) return wsc.send(JSON.stringify({info: "create", error: 2})); //Se já estiver em uma sala
     let newId;
@@ -112,7 +116,10 @@ let actionWsIncommingMain = {
     wsc.send(JSON.stringify({info: "create", data: {id: newRoom, nicks: roomsWaiting[roomsWaiting.length - 1].nicks}}));
     broadcastRoomList();
   },
-  "join": (wsc, nick, id) => {
+  "join": (args) => {
+    let wsc = args.wsc;
+    let nick = args.nick;
+    let id = args.id;
     if (!nick) return wsc.send(JSON.stringify({info: "join", error: 1})); //Tentou criar sem nome
     let indexId = -1;
     roomsWaiting.some((el, index)=>{
@@ -127,7 +134,7 @@ let actionWsIncommingMain = {
     if (roomsWaiting.some((el)=>{return el.players.some((pl)=>{ //Se já estiver em uma sala
       idAlready = el.id;
       return (wsc == pl);
-    })})){actionWsIncommingMain["closeRoom"](wsc, idAlready);} //Fecha a sala anterior
+    })})){actionWsIncommingMain["closeRoom"]({wsc: wsc, id: idAlready});} //Fecha a sala anterior
     roomsWaiting[indexId].players.push(wsc);
     roomsWaiting[indexId].nicks.push(nick);
     roomFilled  = roomsWaiting[indexId].players.length == qtyPlayers;
@@ -143,7 +150,9 @@ let actionWsIncommingMain = {
     if (roomFilled) roomsPlaying.push(roomsWaiting.splice(indexId, 1)[0]);
     broadcastRoomList();
   },
-  "closeRoom": (wsc, id) => {
+  "closeRoom": (args) => {
+    let wsc = args.wsc;
+    let id = args.id;
     let indexId = -1;
     roomsWaiting.some((el, index)=>{
       if (el.id == id){
@@ -162,13 +171,14 @@ let actionWsIncommingMain = {
 };
 
 /**
- *  --- Rotas ---
- */
+*  --- Rotas ---
+*/
 
 /**
- * Conexão genérica do WS
- */
+* Conexão genérica do WS
+*/
 expressWs.getWss().on('connection', function(wsc, req) {
+  wsc.sessionID = req.sessionID;
   if (req.url == "/.websocket"){
     wssConnectionsMain.push(wsc);
     sendCustomListRoom(wsc);
@@ -186,37 +196,44 @@ expressWs.getWss().on('connection', function(wsc, req) {
         wsc.send(JSON.stringify({info: "open", error: 1})); //Não existe essa sala aberta
         return wsc.terminate();
       }
-      if(!roomsPlaying[indexId].players.some((el)=>{return wsc == el})){
+      if(!roomsPlaying[indexId].players.some((el)=>{
+        if (wsc.sessionID == el.sessionID){
+          el = wsc;
+          return true;
+        }
+      })){
         wsc.send(JSON.stringify({info: "open", error: 2})); //Esse jogador não está cadastrado nessa sala
         return wsc.terminate();
       }
-      wsc.send(JSON.stringify({info: "open", data: roomsPlaying[indexId]}));
+      wssConnectionsGame.push(wsc);
+      console.log(`Abriu conexão WS - ${roomsPlaying[indexId].id}. Qtd total: ${wssConnectionsGame.length}`);
+      return wsc.send(JSON.stringify({info: "open", data: roomsPlaying[indexId]}));
     }
   }
 });
 
 /**
- * Tela inicial
- */
+* Tela inicial
+*/
 app.get('/', function(req, res){
   res.render("index");
 });
 
 /**
- * Tela inicial
- */
- app.get('/game/:id', function(req, res){
+* Tela inicial
+*/
+app.get('/game/:id', function(req, res){
   res.render("game");
 });
 
 /**
- * WS da tela inicial
- */
+* WS da tela inicial
+*/
 app.ws('/', function(wsc, req) {
   wsc.on('message', function incoming(data) {
     try {
       data = JSON.parse(data);
-      actionWsIncommingMain[data.info](wsc, nick = (data.nick ? data.nick : undefined), id = (data.id ? data.id : undefined));
+      actionWsIncommingMain[data.info]({wsc, nick: (data.nick ? data.nick : undefined), id: (data.id ? data.id : undefined)});
     } catch(e){
       console.log(e);
     }
@@ -225,7 +242,7 @@ app.ws('/', function(wsc, req) {
     if (roomsWaiting.some((el)=>{return el.players.some((pl)=>{ //Se estiver em uma sala
       idAlready = el.id;
       return (wsc == pl);
-    })})){actionWsIncommingMain["closeRoom"](wsc, idAlready);} //Fecha a sala
+    })})){actionWsIncommingMain["closeRoom"]({wsc: wsc, id: idAlready});} //Fecha a sala
     wssConnectionsMain.some((el, id, arr)=>{
       if (el == wsc){
         arr.splice(id, 1);
@@ -237,39 +254,45 @@ app.ws('/', function(wsc, req) {
 });
 
 /**
- * WS do jogo
- */
-app.ws('/:id', function(wsc, req) {
+* WS do jogo
+*/
+app.ws('/game/:id', function(wsc, req) {
   wsc.on('message', function incoming(data) {
     console.log(data);
     wsc.send("message");
   });  
   wsc.on('close', function incoming(message) {
     console.log("fechou aqui, ó");
+    wssConnectionsGame.some((el, id, arr)=>{
+      if (el == wsc){
+        arr.splice(id, 1);
+        return true;
+      }
+    });
     wsc.send("close");
   });
 });
 
 /**
- * Iniciar servidor principal
- */
+* Iniciar servidor principal
+*/
 app.listen(portMain, ()=>{
   console.log(`Escutando em ${portMain} - Pressione ctrl + C para desligar servidor.`);
 });
 
 /** --------------------------
- *  --- SERVIDOR ADMIN ---
- *  --------------------------
- */
+*  --- SERVIDOR ADMIN ---
+*  --------------------------
+*/
 
 /**
- * Requires para porta admin
- */
+* Requires para porta admin
+*/
 const appAdmin = express();
 
 /**
- * Configurações servidor principal
- */
+* Configurações servidor principal
+*/
 appAdmin.use(express.static("public"));
 appAdmin.use(express.urlencoded({extended: true})); 
 appAdmin.use(express.json());
@@ -277,27 +300,27 @@ appAdmin.set('view engine','ejs');
 appAdmin.set('views', path.join(__dirname, 'app', 'view', 'admin'));
 
 /**
- *  --- Rotas ---
- */
+*  --- Rotas ---
+*/
 
 /**
- * Tela inicial
- */
+* Tela inicial
+*/
 appAdmin.get("/", (req, res) => {
   res.redirect("/add");
 });
 
 /**
- * Tela Add
- */
+* Tela Add
+*/
 appAdmin.get("/add", async (req, res) => {
   var wordS = await Word.GetAll(true);
   res.render("add",{wordS});
 });
 
 /**
- * Criar palavra nova
- */
+* Criar palavra nova
+*/
 appAdmin.post("/create", async (req, res) => {
   var status = await Word.Create(req.body.palavra);
   if(status){
@@ -308,8 +331,8 @@ appAdmin.post("/create", async (req, res) => {
 });
 
 /**
- * Deletar palavra
- */
+* Deletar palavra
+*/
 appAdmin.post("/delete", async (req, res) => {
   var status = await Word.Delete(req.body.palavra);
   if (status){
@@ -320,8 +343,8 @@ appAdmin.post("/delete", async (req, res) => {
 });
 
 /**
- * Iniciar servidor admin
- */
+* Iniciar servidor admin
+*/
 appAdmin.listen(portAdmin, ()=>{
   console.log(`Escutando em ${portAdmin} - Pressione ctrl + C para desligar servidor.`);
 });
